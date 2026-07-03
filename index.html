@@ -1411,6 +1411,8 @@
     function setupJoystickEvents(playerId, container, knob) {
       let active = false;
       let pointerId = null;
+      let startX = 0;
+      let startY = 0;
 
       container.addEventListener('pointerdown', (e) => {
         e.preventDefault();
@@ -1418,13 +1420,23 @@
         active = true;
         pointerId = e.pointerId;
         container.setPointerCapture(e.pointerId);
-        updateJoystickDrag(e, playerId, container, knob);
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        updateJoystickDrag(e, playerId, container, knob, startX, startY, (newX, newY) => {
+          startX = newX;
+          startY = newY;
+        });
       });
 
       container.addEventListener('pointermove', (e) => {
         if (active && e.pointerId === pointerId) {
           e.preventDefault();
-          updateJoystickDrag(e, playerId, container, knob);
+          updateJoystickDrag(e, playerId, container, knob, startX, startY, (newX, newY) => {
+            startX = newX;
+            startY = newY;
+          });
         }
       });
 
@@ -1447,16 +1459,12 @@
       container.addEventListener('pointerleave', stopDrag);
     }
 
-    function updateJoystickDrag(e, playerId, container, knob) {
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-
-      let dx = e.clientX - centerX;
-      let dy = e.clientY - centerY;
+    function updateJoystickDrag(e, playerId, container, knob, startX, startY, setCenter) {
+      let dx = e.clientX - startX;
+      let dy = e.clientY - startY;
 
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDrag = rect.width / 2 - 8;
+      const maxDrag = container.clientWidth / 2 - 8;
 
       const angle = Math.atan2(dy, dx);
 
@@ -1465,14 +1473,19 @@
       if (dist > maxDrag) {
         knobX = Math.cos(angle) * maxDrag;
         knobY = Math.sin(angle) * maxDrag;
+        setCenter(e.clientX - knobX, e.clientY - knobY);
       }
 
       knob.style.transform = `translate(${knobX}px, ${knobY}px)`;
 
       const cell = snakes.find(s => s.id === playerId);
       if (cell && !cell.isDead) {
-        cell.angle = angle;
-        cell.joystickActive = true;
+        if (dist > 5) {
+          cell.angle = angle;
+          cell.joystickActive = true;
+        } else {
+          cell.joystickActive = false;
+        }
       }
     }
 
