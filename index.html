@@ -467,7 +467,8 @@
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       padding: 8px;
       gap: 8px;
-      z-index: 10;
+      z-index: 9999;
+      overflow: visible !important;
     }
 
     .control-column {
@@ -480,7 +481,7 @@
       border-radius: 14px;
       padding: 8px;
       position: relative;
-      overflow: hidden;
+      overflow: visible !important;
     }
 
     .control-header {
@@ -501,6 +502,7 @@
       justify-content:center;
       width: 100%;
       gap: 50px;
+      overflow: visible !important;
     }
 
     /* VIRTUAL JOYSTICK LAYOUT */
@@ -516,6 +518,7 @@
       justify-content: center;
       align-items: center;
       box-shadow: 0 0 10px rgba(var(--p-rgb), 0.1);
+      z-index: 99999 !important;
     }
 
     .joystick-knob {
